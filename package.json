@@ -1,21 +1,19 @@
 {
-  "name": "tetris",
+  "name": "project",
   "version": "1.0.0",
-  "description": "play tetris!",
+  "description": "",
   "main": "app.js",
-  "dependencies": {},
+  "dependencies": {
+    "express": "^4.15.3",
+    "socket.io": "^1.7.4"
+  },
+  "engines": {
+    "node": "4.1.x"
+  },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/lilharry/tetris.git"
+    "start": "node app.js"
   },
   "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/lilharry/tetris/issues"
-  },
-  "homepage": "https://github.com/lilharry/tetris#readme"
+  "license": "ISC"
 }
