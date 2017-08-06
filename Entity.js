@@ -24,6 +24,7 @@ getFrameUpdateData = function(){
 
 Player = function(param){
 	var self = {};
+	self.id = param.id;
 	self.number = "" + Math.floor(10 * Math.random());
 	self.username = param.username;
 	self.canvasDataURL = 0;
@@ -32,23 +33,30 @@ Player = function(param){
 	self.pressingUp = false;
 	self.pressingDown = false;
 	
-
-	self.update = function(canvasDataURL){
-		self.canvasDataURL = canvasDataURL; 
+/*
+	self.update = function(){
+		//update url
 	}
+	*/
+	
 	self.getInitPack = function(){
 		return {
-			name:self.name,
+			id:self.id,
+			name:self.username,
+			canvasDataURL:self.canvasDataURL,
 		};		
 	}
 	self.getUpdatePack = function(){
 		return {
-			name:self.name,
+			id:self.id,
+			name:self.username,
+			canvasDataURL:self.canvasDataURL,
 		}	
 	}
 	
 	Player.list[self.id] = self;
 	initPack.player.push(self.getInitPack());
+	//console.log(Player.list[self.id]);
 	return self;
 }
 Player.list = {};
@@ -67,6 +75,9 @@ Player.onConnect = function(socket,username){
 			player.pressingUp = data.state;
 		else if(data.inputId === 'down')				 //harddrop, softdrop, save
 			player.pressingDown = data.state;
+	});
+	socket.on('selfPack',function(data){
+		player.canvasDataURL = data.playerDataURL;
 	});
 /*	socket.on('sendMsgToServer',function(data){
 		for(var i in SOCKET_LIST){
@@ -87,10 +98,10 @@ Player.onConnect = function(socket,username){
 		}
 	});
 	*/
+	//console.log(player,player.getInitPack());
 	socket.emit('init',{
 		selfId:socket.id,
-		player:Player.getAllInitPack(),
-		//queue:queue.getAllInitPack(),
+		player:player.getInitPack(),
 	})
 }
 Player.getAllInitPack = function(){
@@ -108,7 +119,7 @@ Player.update = function(){
 	var pack = [];
 	for(var i in Player.list){
 		var player = Player.list[i];
-		player.update();
+		//player.update();
 		pack.push(player.getUpdatePack());		
 	}
 	return pack;

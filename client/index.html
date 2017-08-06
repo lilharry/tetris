@@ -14,8 +14,8 @@
     #score    { color: red; font-weight: bold; vertical-align: middle; }
     #rows     { color: blue; font-weight: bold; vertical-align: middle; }
     #stats    { position: absolute; bottom: 0em; right: 1em; }
-    #tetris2   { margin: 1em auto; padding: 1em; border: 4px solid black; border-radius: 10px; background-color: #F8F8F8; width: 850px;}
-    #canvas2   { display: inline-block; vertical-align: top; box-shadow: 10px 10px 10px #999; border: 2px solid #333; width: 400px; height: 800px;}
+    #tetris2   { margin: 1em auto; padding: 1em; border: 4px solid black; border-radius: 10px; background-color: #F8F8F8; width: 850px; height: 1000px;}
+    #canvas2   { display: inline-block; vertical-align: top; box-shadow: 10px 10px 10px #999; border: 2px solid #333; width: 200px; height: 400px;}
     @media screen and (min-width:   0px) and (min-height:   0px)  { #tetris { font-size: 0.75em; width: 250px; } #menu { width: 100px; height: 200px; } #upcoming { width:  50px; height:  50px; } #canvas { width: 100px; height: 200px; } } /* 10px chunks */
     @media screen and (min-width: 400px) and (min-height: 400px)  { #tetris { font-size: 1.00em; width: 350px; } #menu { width: 150px; height: 300px; } #upcoming { width:  75px; height:  75px; } #canvas { width: 150px; height: 300px; } } /* 15px chunks */
     @media screen and (min-width: 500px) and (min-height: 500px)  { #tetris { font-size: 1.25em; width: 450px; } #menu { width: 200px; height: 400px; } #upcoming { width: 100px; height: 100px; } #canvas { width: 200px; height: 400px; } } /* 20px chunks */
@@ -472,48 +472,24 @@
 			socket.emit('sendMsgToServer',chatInput.value);
 		chatInput.value = '';		
 	}
-	UI
-	var changeMap = function(){
-		socket.emit('changeMap');
-	}
-	
-	var inventory = new Inventory(socket,false);
-	socket.on('updateInventory',function(items){
-		inventory.items = items;
-		inventory.refreshRender();
-	});
-
-	//game
-	var Img = {};
-	Img.player = new Image();
-	Img.player.src = '/client/img/player.png';
-	Img.bullet = new Image();
-	Img.bullet.src = '/client/img/bullet.png';
-	
-	Img.map = {};
-	Img.map['field'] = new Image();
-	Img.map['field'].src = '/client/img/map.png';
-	Img.map['forest'] = new Image();
-	Img.map['forest'].src = '/client/img/map2.png';
-	
 	
 	var ctx = document.getElementById("ctx").getContext("2d");
 	var ctxUi = document.getElementById("ctx-ui").getContext("2d");
 	ctxUi.font = '30px Arial';
 	*/
 	var Player = function(initPack){
+    console.log("hi new player!");
 		var self = {};
 		self.id = initPack.id;
-		self.number = initPack.number;
+		//self.number = initPack.number;
     self.canvasDataURL = 0;
-		
+		//console.log(initPack, self.id, self.canvasDataURL);
 		self.draw = function(){	//create canvas
       var img = new Image();
       img.onload = start;
       img.src = self.canvasDataURL;
       function start(){
         ctx2.clearRect(0,0,canvas2.width, canvas2.height)
-        console.log(canvas2.offsetWidth, canvas2.offsetHeight);
         ctx2.drawImage(img,0,0,canvas2.width,canvas2.height);
       }
 			/*
@@ -545,58 +521,92 @@
 	}
 	Player.list = {};
 
+  var appendTetris = function(id){
+      console.log("appending")
+      if (document.getElementById(id) == null){
+        console.log("in loop")
+        var newCanv = document.createElement('canvas');
+        newCanv.id = id;
+        newCanv.width = 200;
+        newCanv.height = 400;
+        newCanv.style.display = "inline-block";
+        newCanv.style.border = "2px solid #333";
+        tetris2.appendChild(newCanv);
+      }
+    }
 	
 	var selfId = null;
 
-	socket.on('init',function(data){	
-		if(data.selfId)
-			selfId = data.selfId;
-		//{ player : [{id:123,number:'1',x:0,y:0},{id:1,number:'2',x:0,y:0}], bullet: []}
+	socket.on('init',function(data){
+    if(data.selfId){
+      selfId = data.selfId;
+    }
+    if(data.player.length == 0) return;
+		//console.log(data.player);
+    //{ player : [{id:123,number:'1',x:0,y:0},{id:1,number:'2',x:0,y:0}], bullet: []}
 		for(var i = 0 ; i < data.player.length; i++){
+      //console.log(data.player[i],data.player[i].id);
 			new Player(data.player[i]);
+      appendTetris(data.player[i].id);
 		}
 	});
 	socket.on('update',function(data){
+    //console.log(data);
 		for(var i = 0 ; i < data.player.length; i++){
 			var pack = data.player[i];
 			var p = Player.list[pack.id];
-			if(p){
-        var theDataURL = canvas.toDataURL('image/jpg',0.5);
-        p.canvasDataURL = theDataURL;
-				/*if(pack.x !== undefined)
-					p.x = pack.x;
-				if(pack.y !== undefined)
-					p.y = pack.y;
-				if(pack.hp !== undefined)
-					p.hp = pack.hp;
-				if(pack.score !== undefined)
-					p.score = pack.score;
-				if(pack.map !== undefined)
-					p.map = pack.map;
-        */
+      //console.log(p)
+			if(p){//&& p!=selfId
+        //console.log(p);
+        //console.log(pack);
+        if(pack.canvasDataURL !== undefined && document.getElementById(pack.id)){
+          p.canvasDataURL = pack.canvasDataURL;
+          var otherCanvas = document.getElementById(pack.id);
+          var ctx3 = otherCanvas.getContext('2d')
+          //console.log(p.canvasDataURL, otherCanvas)
+          //console.log(otherCanvas,ctx3);
+          var img = new Image();
+          img.onload = start;
+          img.src = p.canvasDataURL;
+          function start(){
+            ctx3.clearRect(0,0,otherCanvas.width, otherCanvas.height)
+            ctx3.drawImage(img,0,0,otherCanvas.width,otherCanvas.height);
+          }
+        }
+
+        //var theDataURL = canvas.toDataURL();
+        //p.canvasDataURL = theDataURL;
 			}
 		}
 
 	});
 	
 	socket.on('remove',function(data){
+    //console.log(data);
 		//{player:[12323],bullet:[12323,123123]}
 		for(var i = 0 ; i < data.player.length; i++){
 			delete Player.list[data.player[i]];
+      var removeCanv = get(data.id);
+      removeCanv.parentNode.removeChild(removeCanv);
 		}
 	});
 	
 	setInterval(function(){
 		if(!selfId)
 			return;
+    //console.log(selfId);
+    socket.emit('selfPack',{
+      playerId:selfId,   //not your own id
+      playerDataURL:canvas.toDataURL(),
+    });
 		//ctx.clearRect(0,0,500,500);
-		for(var i in Player.list)
-			Player.list[i].draw();
+		//for(var i in Player.list)
+		//	Player.list[i].draw();
 	},30);
 	
 	
 	
-  /*
+  
 	document.onkeydown = function(event){
 		if(event.keyCode === 68)	//d
 			socket.emit('keyPress',{inputId:'right',state:true});
@@ -619,23 +629,9 @@
 			socket.emit('keyPress',{inputId:'up',state:false});
 	}
 	
-	document.onmousedown = function(event){
-		socket.emit('keyPress',{inputId:'attack',state:true});
-	}
-	document.onmouseup = function(event){
-		socket.emit('keyPress',{inputId:'attack',state:false});
-	}
-	document.onmousemove = function(event){
-		var x = -250 + event.clientX - 8;
-		var y = -250 + event.clientY - 8;
-		var angle = Math.atan2(y,x) / Math.PI * 180;
-		socket.emit('keyPress',{inputId:'mouseAngle',state:angle});
-	}
-	
-	document.oncontextmenu = function(event){
-		event.preventDefault();
-	}
-	*/
+	//document.oncontextmenu = function(event){
+	//	event.preventDefault();}
+
 	
 	
 </script>

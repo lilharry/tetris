@@ -84,8 +84,13 @@ io.sockets.on('connection', function(socket){
 		var res = eval(data);
 		socket.emit('evalAnswer',res);		
 	});
-	
-	
+	/*
+	socket.on('selfPack',function(data){
+		if(data.playerId && data.playerDataURL)
+			console.log(data.playerId, data.playerDataURL);
+			Player.list[data.playerId].canvasDataURL = data.playerDataURL;
+	});
+	*/
 	
 });
 
