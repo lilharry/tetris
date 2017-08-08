@@ -21,29 +21,308 @@ getFrameUpdateData = function(){
 	return pack;
 }
 
+var initGrid = function(){
+	numrows = 20;
+	numcols = 10;
+	var arr = [];
+   	for (var i = 0; i < numrows; ++i){
+      var columns = [];
+      for (var j = 0; j < numcols; ++j){
+         columns[j] = 0;
+      }
+      arr[i] = columns;
+    }
+    return arr;
+}
+
+
+
+var I_BLOCK = {type:1, xorigin:5, yorigin:2,
+			x:[-1, 0, 1, 2],
+			y:[0, 0, 0, 0]};
+var J_BLOCK = {type:2, xorigin:5, yorigin:2,
+			x:[-1, 0, 1, -1],
+			y:[0, 0, 0, -1]};
+var L_BLOCK = {type:3, xorigin:5, yorigin:2,
+			x:[-1, 0, 1, 1],
+			y:[0, 0, 0, -1]};
+var O_BLOCK = {type:4, xorigin:5, yorigin:2,
+			x:[0, 0, 1, 1],
+			y:[-1, 0, -1, 0]};
+var S_BLOCK = {type:5, xorigin:5, yorigin:2,
+			x:[-1, 0, 0, 1],
+			y:[0, 0, -1, -1]};
+var T_BLOCK = {type:6, xorigin:5, yorigin:2,
+			x:[-1, 0, 1, 0],
+			y:[0, 0, 0, -1]};
+var Z_BLOCK = {type:7, xorigin:5, yorigin:2,
+			x:[-1, 0, 1, 0],
+			y:[-1, -1, 0, 0]}
 
 Player = function(param){
-	var self = {};
-	self.id = param.id;
-	self.number = "" + Math.floor(10 * Math.random());
-	self.username = param.username;
-	self.canvasDataURL = 0;
-	self.pressingRight = false;
-	self.pressingLeft = false;
-	self.pressingUp = false;
-	self.pressingDown = false;
-	
-/*
-	self.update = function(){
-		//update url
+	var self = {
+	id : param.id,
+	grid : initGrid(),
+	curr : 1,
+	usedHold : 0,
+	currPiece : I_BLOCK,
+	testPiece : I_BLOCK,
+	holdPiece : I_BLOCK,
+	pieceQueue : [1,2,3,4,5,6,7],
+	username : param.username,
+	dropDownTime : 1,
+	pressingRight : false,
+	pressingLeft : false,
+	pressingUp : false,
+	pressingDown : false,
 	}
-	*/
+	//console.log(self);
 	
+	self.printGrid = function(){
+	  var str = ""
+	  for(var i=0; i<22; i++){
+	    for(var j=0; j<10; j++){
+	      str=self.grid[j][i]+",";
+	    }
+	    console.log(str)
+	  }
+	}
+	self.removeFromBoard = function(){
+		for (var i=0;i<4;i++){
+			var x=self.currPiece.xorigin + self.currPiece.x[i];
+		    var y=self.currPiece.yorigin + self.currPiece.y[i];
+		    self.grid[x][y]=0;
+		 }
+	}
+	self.updateBoard = function(){
+		for (var i=0;i<4;i++){
+		    var x=self.currPiece.xorigin + self.currPiece.x[i];
+		    var y=self.currPiece.yorigin + self.currPiece.y[i];
+		    self.grid[x][y]=self.currPiece.type;
+		  }
+	}
+	self.initCurrPiece = function(){
+		self.pieceQueue.sort(function(a, b){return 0.5 - Math.random()});
+		self.curr = 1;
+		switch (self.pieceQueue[self.curr]){
+			case 0: self.currPiece = I_BLOCK; self.testPiece = self.currPiece; break;
+			case 1: self.currPiece = J_BLOCK; self.testPiece = self.currPiece; break;
+			case 2: self.currPiece = L_BLOCK; self.testPiece = self.currPiece; break; 
+			case 3: self.currPiece = O_BLOCK; self.testPiece = self.currPiece; break;
+			case 4: self.currPiece = S_BLOCK; self.testPiece = self.currPiece; break; 
+			case 5: self.currPiece = T_BLOCK; self.testPiece = self.currPiece; break;
+			case 6: self.currPiece = Z_BLOCK; self.testPiece = self.currPiece; break;
+		}
+		switch (self.pieceQueue[self.curr-1]){
+			case 0: self.holdPiece = I_BLOCK; break;
+			case 1: self.holdPiece = J_BLOCK; break;
+			case 2: self.holdPiece = L_BLOCK; break;
+			case 3: self.holdPiece = O_BLOCK; break;
+			case 4: self.holdPiece = S_BLOCK; break;
+			case 5: self.holdPiece = T_BLOCK; break;
+			case 6: self.holdPiece = Z_BLOCK; break;
+		}
+	}
+	self.nextPiece=function(){
+		if (self.curr==7){  
+			self.pieceQueue.sort(function(a, b){return 0.5 - Math.random()});
+			self.curr = 0;
+		}
+		self.curr+=1;
+		self.usedHold=0;
+		self.updateBoard();
+		switch (self.pieceQueue[self.curr]){
+			case 0: if(self.isDie(I_BLOCK,self.grid)) return 0; self.currPiece = I_BLOCK; self.testPiece = self.currPiece; break;
+			case 1: if(self.isDie(J_BLOCK,self.grid)) return 0; self.currPiece = J_BLOCK; self.testPiece = self.currPiece; break;
+			case 2: if(self.isDie(L_BLOCK,self.grid)) return 0; self.currPiece = L_BLOCK; self.testPiece = self.currPiece; break;
+			case 3: if(self.isDie(O_BLOCK,self.grid)) return 0; self.currPiece = O_BLOCK; self.testPiece = self.currPiece; break;
+			case 4: if(self.isDie(S_BLOCK,self.grid)) return 0; self.currPiece = S_BLOCK; self.testPiece = self.currPiece; break;
+			case 5: if(self.isDie(T_BLOCK,self.grid)) return 0; self.currPiece = T_BLOCK; self.testPiece = self.currPiece; break;
+			case 6: if(self.isDie(Z_BLOCK,self.grid)) return 0; self.currPiece = Z_BLOCK; self.testPiece = self.currPiece; break;
+		}
+		return 1;
+	}
+
+	self.hold=function(){
+	  var temp;
+	  self.removeFromBoard();
+	  temp = self.holdPiece;
+	  self.holdPiece = self.currPiece;
+	  self.currPiece = temp;
+	  self.updateBoard();
+	}
+
+	self.collidesAt=function(){
+	  self.removeFromBoard();
+	  for(var i=0;i<4;i++){
+	    var x = self.testPiece.x[i] + self.testPiece.xorigin;
+	    var y = self.testPiece.y[i] + self.testPiece.yorigin;
+	    if(x < 0 || x > 9 || y < 0 || y > 21 || self.grid[x][y]) {
+	      self.updateBoard();
+	      return 1;
+	    }
+	  }
+	  self.updateBoard();
+	  return 0;
+	}
+
+	self.try=function(action){ //{0:+rotate,1:-rotate,2:leftmove,3:rightmove,4:down}
+	  switch(action){
+	  case 0:
+	    //prvarf("rotating: in try\n");
+	    self.testPiece = rotate(self.testPiece,1);
+	    if (!self.collidesAt())return 1;
+	    else{return 0;}
+	 
+	  case 1:
+	    self.testPiece = rotate(self.testPiece,-1);
+	    if (!self.collidesAt())return 1;
+	    else{return 0;}
+	  
+	  case 2:
+	    self.testPiece = self.move(self.testPiece,-1);
+	    if (!(self.collidesAt())){ return 1;}
+	    else{return 0;}
+
+	  case 3:
+	    self.testPiece = self.move(self.testPiece,1);
+	    if (!self.collidesAt()) return 1;
+	    else{return 0;}
+
+	  case 4:
+	    self.testPiece = dropDown(self.testPiece);
+	    if(!self.collidesAt()) return 1;
+	    else{return 0;}
+
+	  }
+	}
+	self.deleteRow=function(row){
+	  for (var j = row-1; j > 2; j--) {
+	    for (var i = 0; i < 10; i++) {
+	      self.grid[i][j+1] = self.grid[i][j];
+	    }
+	  }
+	}
+
+	self.dropDown=function(piece){
+		piece.yorigin++;
+		return piece;
+	}
+
+	self.isDie=function(piece,grid){
+		for(i=0;i<4;i++){
+		    var x = Piece.x[i] + piece.xorigin;
+		    var y = Piece.y[i] + piece.yorigin;
+		    if(x < 0 || x > 9 || y < 0 || y > 21 || grid[x][y]) return 1;
+		  }
+	  return 0;
+	}
+
+	self.rotate=function(piece, i){
+	  //if O_BLOCK(square) don't rotate
+	  var j; 
+	  if (i>0){  //clockwise rotation
+	    for (j=0; j<4;j++){
+	      var newX = piece.y[j];
+	      var newY = piece.x[j] * (-1);
+	      piece.x[j] = newX;
+	      piece.y[j] = newY;
+	    }
+	  }
+	  if (i<0){  //counterclockwise rotation
+	    for (j=0; j<4;j++){
+	      var newX = piece.y[j] * (-1);
+	      var newY = piece.x[j];
+	      piece.x[j] = newX;
+	      piece.y[j] = newY;
+	    }
+	  }
+	  return piece;
+	}
+
+	self.move=function(piece, displacement){
+	  piece.xorigin+=displacement;
+	  return piece;
+	}
+
+	self.clearRows=function(){
+	  var score = 0;
+	  for (var j=21;j>2;j--){
+	    var gap=0;
+	    for (var i=0;i<10;i++){
+	      if(!self.grid[i][j]){
+			gap=1;
+			break;
+	      }
+	    }
+	    if(!gap){
+	      deleteRow(j);
+	      score++;
+	      j++;
+	    }
+	  }
+	  return pow(2,score-1);
+	}
+
+	self.keyPressed = function(){
+		if(pressingUp && self.try(1)){
+			self.removeFromBoard();
+			self.currPiece = self.rotate(self.currPiece,-1);
+			self.updateBoard();
+		}
+	    if (pressingLeft && self.try(2)){
+			self.removeFromBoard();
+			self.currPiece = move(self.currPiece,-1);
+			self.updateBoard();
+	    }
+	    return;
+	    if (pressingRight && self.try(3)){
+			self.removeFromBoard();
+			self.currPiece = move(self.currPiece,1);
+			self.updateBoard();
+	    }
+	    return;
+	    if (pressingDown && self.try(4)){
+			self.removeFromBoard();
+			self.currPiece = dropDown(self.currPiece);
+			self.updateBoard();
+	    }
+	    return;
+	    /*
+	    while (try(4)){
+		self.removeFromBoard();
+		self.currPiece = dropDown(self.currPiece);
+	      }
+	      if (nextPiece()){
+		P1_SCORE+= clearRows();
+	      }
+	      updateBoard();
+	      break;
+	      */
+	}
+	self.update = function(){
+		if (self.dropDownTime <= 0){
+			setTimeout(function(){
+				if (self.try(4)){
+					self.removeFromBoard();
+					self.currPiece = self.dropDown(currPiece);
+					self.updateBoard();
+				}
+				console.log("yo");
+				self.dropDownTime = 0;
+			},800);
+		}
+		else self.dropDownTime = 1;
+	}
 	self.getInitPack = function(){
 		return {
 			id:self.id,
 			name:self.username,
 			canvasDataURL:self.canvasDataURL,
+			grid : self.grid,
+			currPiece : self.currPiece,
+			holdPiece : self.holdPiece,
+			pieceQueue : [],
 		};		
 	}
 	self.getUpdatePack = function(){
@@ -51,14 +330,24 @@ Player = function(param){
 			id:self.id,
 			name:self.username,
 			canvasDataURL:self.canvasDataURL,
+			grid : self.grid,
+			currPiece : self.currPiece,
+			holdPiece : self.holdPiece,
+			pieceQueue : [],
 		}	
 	}
 	
+	self.initCurrPiece();
+	self.updateBoard();
+	console.log(self.grid);
+	//printGrid();
 	Player.list[self.id] = self;
 	initPack.player.push(self.getInitPack());
 	//console.log(Player.list[self.id]);
 	return self;
 }
+
+
 Player.list = {};
 Player.onConnect = function(socket,username){
 	var player = Player({
@@ -68,13 +357,14 @@ Player.onConnect = function(socket,username){
 	});
 	socket.on('keyPress',function(data){
 		if(data.inputId === 'left')
-			player.pressingLeft = data.state;
+			player.pressingLeft = data.state; 
 		else if(data.inputId === 'right')
 			player.pressingRight = data.state;
 		else if(data.inputId === 'up')
 			player.pressingUp = data.state;
 		else if(data.inputId === 'down')				 //harddrop, softdrop, save
 			player.pressingDown = data.state;
+		player.keyPressed();
 	});
 	socket.on('selfPack',function(data){
 		player.canvasDataURL = data.playerDataURL;
@@ -101,7 +391,7 @@ Player.onConnect = function(socket,username){
 	//console.log(player,player.getInitPack());
 	socket.emit('init',{
 		selfId:socket.id,
-		player:player.getInitPack(),
+		player:Player.getAllInitPack(),
 	})
 }
 Player.getAllInitPack = function(){
@@ -119,7 +409,7 @@ Player.update = function(){
 	var pack = [];
 	for(var i in Player.list){
 		var player = Player.list[i];
-		//player.update();
+		player.update();
 		pack.push(player.getUpdatePack());		
 	}
 	return pack;
