@@ -126,6 +126,7 @@ Player = function(param){
 		}
 	}
 	self.nextPiece=function(){
+		console.log("next");
 		if (self.curr==7){  
 			self.pieceQueue.sort(function(a, b){return 0.5 - Math.random()});
 			self.curr = 0;
@@ -133,6 +134,8 @@ Player = function(param){
 		self.curr+=1;
 		self.usedHold=0;
 		self.updateBoard();
+		self.xorigin = 5;
+		self.yorigin = 2;
 		switch (self.pieceQueue[self.curr]){
 			case 0: if(self.isDie(I_BLOCK,self.grid)) return 0; self.currPiece = I_BLOCK; self.testPiece = self.currPiece; break;
 			case 1: if(self.isDie(J_BLOCK,self.grid)) return 0; self.currPiece = J_BLOCK; self.testPiece = self.currPiece; break;
@@ -160,11 +163,13 @@ Player = function(param){
 	    var x = self.testPiece.x[i] + self.xorigin + xdisplacement;
 	    var y = self.testPiece.y[i] + self.yorigin + ydisplacement;
 	    if(x < 0 || x > 9 || y < 0 || y > 21 || self.grid[x][y]) {
+	    	self.testPiece = self.currPiece
 	      self.updateBoard();
 	      return 1;
 	    }
 	  }
-	  self.updateBoard();
+	  //self.testPiece = self.currPiece
+	  //self.updateBoard();
 	  return 0;
 	}
 
@@ -176,7 +181,9 @@ Player = function(param){
 	    else{return 0;}
 	 
 	  case 1:
+	  	console.log(self.testPiece, self.currPiece);;
 	    self.testPiece = self.rotate(self.testPiece,-1);
+	    console.log(self.testPiece, self.currPiece);
 	    if (!(self.collidesAt(0,0))) return 1;
 	    else{return 0;}
 	  
@@ -203,15 +210,15 @@ Player = function(param){
 
 	self.isDie=function(piece,grid){
 		for(i=0;i<4;i++){
-		    var x = Piece.x[i] + piece.xorigin;
-		    var y = Piece.y[i] + piece.yorigin;
+		    var x = piece.x[i] + self.xorigin;
+		    var y = piece.y[i] + self.yorigin;
 		    if(x < 0 || x > 9 || y < 0 || y > 21 || grid[x][y]) return 1;
 		  }
 	  return 0;
 	}
 
 	self.rotate=function(piece, i){
-	  //if O_BLOCK(square) don't rotate
+	  if (piece == O_BLOCK) return piece;
 	  var j; 
 	  if (i>0){  //clockwise rotation
 	    for (j=0; j<4;j++){
@@ -253,17 +260,20 @@ Player = function(param){
 
 	self.keyPressed = function(){
 		if(self.pressingUp && self.try(1)){
-			self.removeFromBoard();
-			self.currPiece = self.rotate(self.currPiece,-1);
-			self.updateBoard();
+			console.log("up");
+			//self.removeFromBoard();
+			//self.currPiece = self.rotate(self.currPiece,-1);
+			//self.updateBoard();
 		}
 	    if (self.pressingLeft && self.try(2)){
+			console.log("left");
 			self.removeFromBoard();
 			self.xorigin-=1; 
 			self.updateBoard();
 	    }
 	    return;
 	    if (self.pressingRight && self.try(3)){
+	    	console.log("right");
 			self.removeFromBoard();
 			self.xorigin+=1; 
 			self.updateBoard();
@@ -271,6 +281,7 @@ Player = function(param){
 	    }
 	    return;
 	    if (self.pressingDown && self.try(4)){
+	    	console.log("down");
 			self.removeFromBoard();
 			self.yorigin+=1; 
 			self.updateBoard();
@@ -299,6 +310,15 @@ Player = function(param){
 					self.yorigin++;
 					self.updateBoard();
 				}
+				else{
+					if(self.nextPiece()){
+						self.updateBoard();
+					}/*
+					else{
+						socket.emit("gameover",{
+							player:self.id,
+						})*/
+					}				
 				self.dropDownTime = 0;	},800);  //.8s drop down time
 		}
 	}
