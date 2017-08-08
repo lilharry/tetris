@@ -39,43 +39,16 @@
 <div id="tetris2">
 </div>
   <script>
-    function get(id)        { return document.getElementById(id);  }
-    function hide(id)       { get(id).style.visibility = 'hidden'; }
-    function show(id)       { get(id).style.visibility = null;     }
-    function html(id, html) { get(id).innerHTML = html;            }
-    function timestamp()           { return new Date().getTime();                             }
-    function random(min, max)      { return (min + (Math.random() * (max - min)));            }
-    function randomChoice(choices) { return choices[Math.round(random(0, choices.length-1))]; }
+  function get(id)        { return document.getElementById(id);  }
+  function hide(id)       { get(id).style.visibility = 'hidden'; }
+  function show(id)       { get(id).style.visibility = null;     }
+  function html(id, html) { get(id).innerHTML = html;            }
+  function timestamp()           { return new Date().getTime();                             }
+  function random(min, max)      { return (min + (Math.random() * (max - min)));            }
+  function randomChoice(choices) { return choices[Math.round(random(0, choices.length-1))]; }
 
-    var playing = true;
-    /*
-    function addEvents() {
-      document.addEventListener('keydown', keydown, false);
-      window.addEventListener('resize', resize, false);
-    }
-    function resize(event) {
-      canvas.width   = canvas.clientWidth;  // set canvas logical size equal to its physical size
-      canvas.height  = canvas.clientHeight; // (ditto)
-      ucanvas.width  = ucanvas.clientWidth;
-      ucanvas.height = ucanvas.clientHeight;
-      dx = canvas.width  / nx; // pixel size of a single tetris block
-      dy = canvas.height / ny; // (ditto)
-      invalidate();
-      invalidateNext();
-    }*/
-    function handle(action) {
-      switch(action) {
-        case DIR.LEFT:  move(DIR.LEFT);  break;
-        case DIR.RIGHT: move(DIR.RIGHT); break;
-        case DIR.UP:    rotate();        break;
-        case DIR.DOWN:  drop();          break;
-      }
-    }
-    
-  </script>
+  var playing = true;
 
-
-<script>
 	var socket = io();
 	
 	//sign
@@ -171,7 +144,7 @@
         for(y = 0 ; y < 20 ; y++) {
           for (x = 0 ; x < 10 ; x++) {
             var color = "white";
-            switch(grid[x][y]){
+            switch(grid[x][y+2]){
               case 0: color="white"; break;
               case 1: color="cyan"; break;
               case 2: color="blue"; break;
@@ -194,13 +167,21 @@
     console.log("hi new player!");
 		var self = {
   		id : initPack.id,
-      canvasDataURL : 0,
       grid : initPack.grid,
       currPiece : initPack.currPiece,
       holdPiece : initPack.holdPiece,
       pieceQueue: initPack.pieceQueue,
     }
 
+    self.printGrid = function(){
+    var str = ""
+    for(var i=0; i<22; i++){
+      for(var j=0; j<10; j++){
+        str=self.grid[j][i]+",";
+      }
+      console.log(str)
+    }
+  }
 		//console.log(initPack, self.id, self.canvasDataURL);
     
     /*function drawNext() {
@@ -257,7 +238,7 @@
 		for(var i = 0 ; i < data.player.length; i++){
 			var pack = data.player[i];
 			var p = Player.list[pack.id];
-      //console.log(p)
+      console.log(pack.grid)
 			if(p){//&& p!=selfId
         if (pack.grid !== undefined)
           p.grid = pack.grid
@@ -287,7 +268,7 @@
 			return;
     //console.log(selfId);
     socket.emit('selfPack',{
-      playerId:selfId,   //not your own id
+      playerId:selfId, 
     });
 		//ctx.clearRect(0,0,500,500);
 		//for(var i in Player.list)
@@ -298,24 +279,24 @@
 	
   
 	document.onkeydown = function(event){
-		if(event.keyCode === 68)	//d
+		if(event.keyCode === 39)	
 			socket.emit('keyPress',{inputId:'right',state:true});
-		else if(event.keyCode === 83)	//s
+		else if(event.keyCode === 40)	
 			socket.emit('keyPress',{inputId:'down',state:true});
-		else if(event.keyCode === 65) //a
+		else if(event.keyCode === 37) 
 			socket.emit('keyPress',{inputId:'left',state:true});
-		else if(event.keyCode === 87) // w
+		else if(event.keyCode === 38) 
 			socket.emit('keyPress',{inputId:'up',state:true});
 			
 	}
 	document.onkeyup = function(event){
-		if(event.keyCode === 68)	//d
+		if(event.keyCode === 39)	
 			socket.emit('keyPress',{inputId:'right',state:false});
-		else if(event.keyCode === 83)	//s
+		else if(event.keyCode === 40)	
 			socket.emit('keyPress',{inputId:'down',state:false});
-		else if(event.keyCode === 65) //a
+		else if(event.keyCode === 37) 
 			socket.emit('keyPress',{inputId:'left',state:false});
-		else if(event.keyCode === 87) // w
+		else if(event.keyCode === 38) 
 			socket.emit('keyPress',{inputId:'up',state:false});
 	}
 	

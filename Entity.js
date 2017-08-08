@@ -22,12 +22,12 @@ getFrameUpdateData = function(){
 }
 
 var initGrid = function(){
-	numrows = 20;
+	numrows = 22;
 	numcols = 10;
 	var arr = [];
-   	for (var i = 0; i < numrows; ++i){
+   	for (var i = 0; i < numcols; ++i){
       var columns = [];
-      for (var j = 0; j < numcols; ++j){
+      for (var j = 0; j < numrows; ++j){
          columns[j] = 0;
       }
       arr[i] = columns;
@@ -37,25 +37,25 @@ var initGrid = function(){
 
 
 
-var I_BLOCK = {type:1, xorigin:5, yorigin:2,
+var I_BLOCK = {type:1, 
 			x:[-1, 0, 1, 2],
 			y:[0, 0, 0, 0]};
-var J_BLOCK = {type:2, xorigin:5, yorigin:2,
+var J_BLOCK = {type:2, 
 			x:[-1, 0, 1, -1],
 			y:[0, 0, 0, -1]};
-var L_BLOCK = {type:3, xorigin:5, yorigin:2,
+var L_BLOCK = {type:3, 
 			x:[-1, 0, 1, 1],
 			y:[0, 0, 0, -1]};
-var O_BLOCK = {type:4, xorigin:5, yorigin:2,
+var O_BLOCK = {type:4, 
 			x:[0, 0, 1, 1],
 			y:[-1, 0, -1, 0]};
-var S_BLOCK = {type:5, xorigin:5, yorigin:2,
+var S_BLOCK = {type:5, 
 			x:[-1, 0, 0, 1],
 			y:[0, 0, -1, -1]};
-var T_BLOCK = {type:6, xorigin:5, yorigin:2,
+var T_BLOCK = {type:6, 
 			x:[-1, 0, 1, 0],
 			y:[0, 0, 0, -1]};
-var Z_BLOCK = {type:7, xorigin:5, yorigin:2,
+var Z_BLOCK = {type:7, 
 			x:[-1, 0, 1, 0],
 			y:[-1, -1, 0, 0]}
 
@@ -66,11 +66,13 @@ Player = function(param){
 	curr : 1,
 	usedHold : 0,
 	currPiece : I_BLOCK,
+	xorigin: 5,
+	yorigin: 2,
 	testPiece : I_BLOCK,
 	holdPiece : I_BLOCK,
 	pieceQueue : [1,2,3,4,5,6,7],
 	username : param.username,
-	dropDownTime : 1,
+	dropDownTime : 0,
 	pressingRight : false,
 	pressingLeft : false,
 	pressingUp : false,
@@ -89,15 +91,15 @@ Player = function(param){
 	}
 	self.removeFromBoard = function(){
 		for (var i=0;i<4;i++){
-			var x=self.currPiece.xorigin + self.currPiece.x[i];
-		    var y=self.currPiece.yorigin + self.currPiece.y[i];
+			var x=self.xorigin + self.currPiece.x[i];
+		    var y=self.yorigin + self.currPiece.y[i];
 		    self.grid[x][y]=0;
 		 }
 	}
 	self.updateBoard = function(){
 		for (var i=0;i<4;i++){
-		    var x=self.currPiece.xorigin + self.currPiece.x[i];
-		    var y=self.currPiece.yorigin + self.currPiece.y[i];
+		    var x=self.xorigin + self.currPiece.x[i];
+		    var y=self.yorigin + self.currPiece.y[i];
 		    self.grid[x][y]=self.currPiece.type;
 		  }
 	}
@@ -152,11 +154,11 @@ Player = function(param){
 	  self.updateBoard();
 	}
 
-	self.collidesAt=function(){
+	self.collidesAt=function(xdisplacement,ydisplacement){
 	  self.removeFromBoard();
 	  for(var i=0;i<4;i++){
-	    var x = self.testPiece.x[i] + self.testPiece.xorigin;
-	    var y = self.testPiece.y[i] + self.testPiece.yorigin;
+	    var x = self.testPiece.x[i] + self.xorigin + xdisplacement;
+	    var y = self.testPiece.y[i] + self.yorigin + ydisplacement;
 	    if(x < 0 || x > 9 || y < 0 || y > 21 || self.grid[x][y]) {
 	      self.updateBoard();
 	      return 1;
@@ -169,31 +171,26 @@ Player = function(param){
 	self.try=function(action){ //{0:+rotate,1:-rotate,2:leftmove,3:rightmove,4:down}
 	  switch(action){
 	  case 0:
-	    //prvarf("rotating: in try\n");
-	    self.testPiece = rotate(self.testPiece,1);
-	    if (!self.collidesAt())return 1;
+	    self.testPiece = self.rotate(self.testPiece,1);
+	    if (!(self.collidesAt(0,0)))return 1;
 	    else{return 0;}
 	 
 	  case 1:
-	    self.testPiece = rotate(self.testPiece,-1);
-	    if (!self.collidesAt())return 1;
+	    self.testPiece = self.rotate(self.testPiece,-1);
+	    if (!(self.collidesAt(0,0))) return 1;
 	    else{return 0;}
 	  
 	  case 2:
-	    self.testPiece = self.move(self.testPiece,-1);
-	    if (!(self.collidesAt())){ return 1;}
+	    if (!(self.collidesAt(-1,0))){ return 1;}
 	    else{return 0;}
 
 	  case 3:
-	    self.testPiece = self.move(self.testPiece,1);
-	    if (!self.collidesAt()) return 1;
+	    if (!(self.collidesAt(1,0))) return 1;
 	    else{return 0;}
 
 	  case 4:
-	    self.testPiece = dropDown(self.testPiece);
-	    if(!self.collidesAt()) return 1;
+	    if(!(self.collidesAt(0,1))) return 1;
 	    else{return 0;}
-
 	  }
 	}
 	self.deleteRow=function(row){
@@ -202,11 +199,6 @@ Player = function(param){
 	      self.grid[i][j+1] = self.grid[i][j];
 	    }
 	  }
-	}
-
-	self.dropDown=function(piece){
-		piece.yorigin++;
-		return piece;
 	}
 
 	self.isDie=function(piece,grid){
@@ -240,11 +232,6 @@ Player = function(param){
 	  return piece;
 	}
 
-	self.move=function(piece, displacement){
-	  piece.xorigin+=displacement;
-	  return piece;
-	}
-
 	self.clearRows=function(){
 	  var score = 0;
 	  for (var j=21;j>2;j--){
@@ -265,26 +252,27 @@ Player = function(param){
 	}
 
 	self.keyPressed = function(){
-		if(pressingUp && self.try(1)){
+		if(self.pressingUp && self.try(1)){
 			self.removeFromBoard();
 			self.currPiece = self.rotate(self.currPiece,-1);
 			self.updateBoard();
 		}
-	    if (pressingLeft && self.try(2)){
+	    if (self.pressingLeft && self.try(2)){
 			self.removeFromBoard();
-			self.currPiece = move(self.currPiece,-1);
+			self.xorigin-=1; 
 			self.updateBoard();
 	    }
 	    return;
-	    if (pressingRight && self.try(3)){
+	    if (self.pressingRight && self.try(3)){
 			self.removeFromBoard();
-			self.currPiece = move(self.currPiece,1);
+			self.xorigin+=1; 
 			self.updateBoard();
+			console.log("right");
 	    }
 	    return;
-	    if (pressingDown && self.try(4)){
+	    if (self.pressingDown && self.try(4)){
 			self.removeFromBoard();
-			self.currPiece = dropDown(self.currPiece);
+			self.yorigin+=1; 
 			self.updateBoard();
 	    }
 	    return;
@@ -301,18 +289,18 @@ Player = function(param){
 	      */
 	}
 	self.update = function(){
+		self.testPiece = self.currPiece;
 		if (self.dropDownTime <= 0){
+			self.dropDownTime = 1;
 			setTimeout(function(){
+				//console.log(self.testPiece,self.currPiece);
 				if (self.try(4)){
 					self.removeFromBoard();
-					self.currPiece = self.dropDown(currPiece);
+					self.yorigin++;
 					self.updateBoard();
 				}
-				console.log("yo");
-				self.dropDownTime = 0;
-			},800);
+				self.dropDownTime = 0;	},800);  //.8s drop down time
 		}
-		else self.dropDownTime = 1;
 	}
 	self.getInitPack = function(){
 		return {
@@ -356,6 +344,7 @@ Player.onConnect = function(socket,username){
 		socket:socket,
 	});
 	socket.on('keyPress',function(data){
+		//console.log("press");
 		if(data.inputId === 'left')
 			player.pressingLeft = data.state; 
 		else if(data.inputId === 'right')
