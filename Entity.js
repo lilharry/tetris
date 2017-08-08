@@ -173,6 +173,7 @@ Player = function(param){
 	  //self.removeFromBoard();
 	  for(var i=0;i<4;i++){
 	    var x = self.currPiece.x[i] + self.xorigin + xdisplacement;
+	    //console.log(x);
 	    var y = self.currPiece.y[i] + self.yorigin + ydisplacement;
 	    if(x < 0 || x > 9 || y < 0 || y > 21 || self.grid[x][y]) {
 	      //self.copyPiece(self.testPiece,self.currPiece);
@@ -189,32 +190,26 @@ Player = function(param){
 		var ret = 0;
 	  switch(action){
 	  case 0:
-	    self.testPiece = self.rotate(self.testPiece,1);
-	    if (!(self.collidesAt(0,0)))return 1;
-	    else{return 0;}
-	 
+	    self.removeFromBoard();
+	  	self.rotate(self.currPiece,1);
+	  	if (!(self.collidesAt(0,0))) ret=1; 
+	  	else self.rotate(self.currPiece,1);
+	 	break;
 	  case 1:
 	  	self.removeFromBoard();
 	  	self.rotate(self.currPiece,-1);
-	  	if (!(self.collidesAt(0,0))) {
-	  		ret=1;
-	  	}
-	  	else{
-	  		self.rotate(self.currPiece,1);
-	  	}
-	  	//console.log(self.testPiece, self.currPiece);;
-	    //self.testPiece = self.rotate(self.testPiece,-1);
-	    //console.log(self.testPiece, self.currPiece);
-	    //if (!(self.collidesAt(0,0))) return 1;
-	  
+	  	if (!(self.collidesAt(0,0))) ret=1;
+	  	else self.rotate(self.currPiece,1);
+	  	break;
+	 
 	  case 2:
 	  	self.removeFromBoard();
 	    if (!(self.collidesAt(-1,0))) ret=1;
-
+	    break;
 	  case 3:
 	  	self.removeFromBoard();
 	    if (!(self.collidesAt(1,0))) ret=1;
-
+	    break;
 	  case 4:
 	  	self.removeFromBoard();
 	    if(!(self.collidesAt(0,1))) ret=1;
@@ -282,26 +277,18 @@ Player = function(param){
 
 	self.keyPressed = function(){
 		if(self.pressingUp && self.try(1)){
-			console.log("up");
-			//self.removeFromBoard();
-			//self.currPiece = self.rotate(self.currPiece,-1);
-			//self.updateBoard();
 		}
 	    if (self.pressingLeft && self.try(2)){
-			console.log("left");
 			self.removeFromBoard();
 			self.xorigin-=1; 
 			self.updateBoard();
 	    }
 	    if (self.pressingRight && self.try(3)){
-	    	console.log("right");
 			self.removeFromBoard();
 			self.xorigin+=1; 
 			self.updateBoard();
-			console.log("right");
 	    }
 	    if (self.pressingDown && self.try(4)){
-	    	console.log("down");
 			self.removeFromBoard();
 			self.yorigin+=1; 
 			self.updateBoard();
@@ -323,7 +310,6 @@ Player = function(param){
 		if (self.dropDownTime <= 0){
 			self.dropDownTime = 1;
 			setTimeout(function(){
-				//console.log(self.testPiece,self.currPiece);
 				if (self.try(4)){
 					self.removeFromBoard();
 					self.yorigin++;
