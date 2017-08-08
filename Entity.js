@@ -37,27 +37,34 @@ var initGrid = function(){
 
 
 
-var I_BLOCK = {type:1, 
-			x:[-1, 0, 1, 2],
-			y:[0, 0, 0, 0]};
-var J_BLOCK = {type:2, 
-			x:[-1, 0, 1, -1],
-			y:[0, 0, 0, -1]};
-var L_BLOCK = {type:3, 
-			x:[-1, 0, 1, 1],
-			y:[0, 0, 0, -1]};
-var O_BLOCK = {type:4, 
-			x:[0, 0, 1, 1],
-			y:[-1, 0, -1, 0]};
-var S_BLOCK = {type:5, 
-			x:[-1, 0, 0, 1],
-			y:[0, 0, -1, -1]};
-var T_BLOCK = {type:6, 
-			x:[-1, 0, 1, 0],
-			y:[0, 0, 0, -1]};
-var Z_BLOCK = {type:7, 
-			x:[-1, 0, 1, 0],
-			y:[-1, -1, 0, 0]}
+I_BLOCK = function() { 
+	this.type=1, 
+	this.x=[-1, 0, 1, 2],
+	this.y=[0, 0, 0, 0]}
+J_BLOCK = function() { 
+	this.type=2, 
+	this.x=[-1, 0, 1, -1],
+	this.y=[0, 0, 0, -1]}
+L_BLOCK = function() { 
+	this.type=3, 
+	this.x=[-1, 0, 1, 1],
+	this.y=[0, 0, 0, -1]}
+O_BLOCK = function() { 
+	this.type=4, 
+	this.x=[0, 0, 1, 1],
+	this.y=[-1, 0, -1, 0]}
+S_BLOCK = function(){ 
+	this.type=5, 
+	this.x=[-1, 0, 0, 1],
+	this.y=[0, 0, -1, -1]}
+T_BLOCK = function() { 
+	this.type=6, 
+	this.x=[-1, 0, 1, 0],
+	this.y=[0, 0, 0, -1]}
+Z_BLOCK = function() { 
+	this.type=7, 
+	this.x=[-1, 0, 1, 0],
+	this.y=[-1, -1, 0, 0]}
 
 Player = function(param){
 	var self = {
@@ -65,11 +72,11 @@ Player = function(param){
 	grid : initGrid(),
 	curr : 1,
 	usedHold : 0,
-	currPiece : I_BLOCK,
+	currPiece : new I_BLOCK(),
 	xorigin: 5,
 	yorigin: 2,
-	testPiece : I_BLOCK,
-	holdPiece : I_BLOCK,
+	testPiece : new I_BLOCK(),
+	holdPiece : new I_BLOCK(),
 	pieceQueue : [1,2,3,4,5,6,7],
 	username : param.username,
 	dropDownTime : 0,
@@ -107,22 +114,22 @@ Player = function(param){
 		self.pieceQueue.sort(function(a, b){return 0.5 - Math.random()});
 		self.curr = 1;
 		switch (self.pieceQueue[self.curr]){
-			case 0: self.currPiece = I_BLOCK; self.testPiece = self.currPiece; break;
-			case 1: self.currPiece = J_BLOCK; self.testPiece = self.currPiece; break;
-			case 2: self.currPiece = L_BLOCK; self.testPiece = self.currPiece; break; 
-			case 3: self.currPiece = O_BLOCK; self.testPiece = self.currPiece; break;
-			case 4: self.currPiece = S_BLOCK; self.testPiece = self.currPiece; break; 
-			case 5: self.currPiece = T_BLOCK; self.testPiece = self.currPiece; break;
-			case 6: self.currPiece = Z_BLOCK; self.testPiece = self.currPiece; break;
+			case 0: self.currPiece = new I_BLOCK(); self.testPiece = new I_BLOCK(); break;
+			case 1: self.currPiece = new J_BLOCK(); self.testPiece = new J_BLOCK(); break;
+			case 2: self.currPiece = new L_BLOCK(); self.testPiece = new L_BLOCK(); break; 
+			case 3: self.currPiece = new O_BLOCK(); self.testPiece = new O_BLOCK(); break;
+			case 4: self.currPiece = new S_BLOCK(); self.testPiece = new S_BLOCK(); break; 
+			case 5: self.currPiece = new T_BLOCK(); self.testPiece = new T_BLOCK(); break;
+			case 6: self.currPiece = new Z_BLOCK(); self.testPiece = new Z_BLOCK(); break;
 		}
 		switch (self.pieceQueue[self.curr-1]){
-			case 0: self.holdPiece = I_BLOCK; break;
-			case 1: self.holdPiece = J_BLOCK; break;
-			case 2: self.holdPiece = L_BLOCK; break;
-			case 3: self.holdPiece = O_BLOCK; break;
-			case 4: self.holdPiece = S_BLOCK; break;
-			case 5: self.holdPiece = T_BLOCK; break;
-			case 6: self.holdPiece = Z_BLOCK; break;
+			case 0: self.holdPiece = new I_BLOCK(); break;
+			case 1: self.holdPiece = new J_BLOCK(); break;
+			case 2: self.holdPiece = new L_BLOCK(); break;
+			case 3: self.holdPiece = new O_BLOCK(); break;
+			case 4: self.holdPiece = new S_BLOCK(); break;
+			case 5: self.holdPiece = new T_BLOCK(); break;
+			case 6: self.holdPiece = new Z_BLOCK(); break;
 		}
 	}
 	self.nextPiece=function(){
@@ -137,15 +144,20 @@ Player = function(param){
 		self.xorigin = 5;
 		self.yorigin = 2;
 		switch (self.pieceQueue[self.curr]){
-			case 0: if(self.isDie(I_BLOCK,self.grid)) return 0; self.currPiece = I_BLOCK; self.testPiece = self.currPiece; break;
-			case 1: if(self.isDie(J_BLOCK,self.grid)) return 0; self.currPiece = J_BLOCK; self.testPiece = self.currPiece; break;
-			case 2: if(self.isDie(L_BLOCK,self.grid)) return 0; self.currPiece = L_BLOCK; self.testPiece = self.currPiece; break;
-			case 3: if(self.isDie(O_BLOCK,self.grid)) return 0; self.currPiece = O_BLOCK; self.testPiece = self.currPiece; break;
-			case 4: if(self.isDie(S_BLOCK,self.grid)) return 0; self.currPiece = S_BLOCK; self.testPiece = self.currPiece; break;
-			case 5: if(self.isDie(T_BLOCK,self.grid)) return 0; self.currPiece = T_BLOCK; self.testPiece = self.currPiece; break;
-			case 6: if(self.isDie(Z_BLOCK,self.grid)) return 0; self.currPiece = Z_BLOCK; self.testPiece = self.currPiece; break;
+			case 0: if(self.isDie(new I_BLOCK(),self.grid)) return 0; self.currPiece = new I_BLOCK(); self.testPiece = new I_BLOCK(); break;
+			case 1: if(self.isDie(new J_BLOCK(),self.grid)) return 0; self.currPiece = new J_BLOCK(); self.testPiece = new J_BLOCK(); break;
+			case 2: if(self.isDie(new L_BLOCK(),self.grid)) return 0; self.currPiece = new L_BLOCK(); self.testPiece = new L_BLOCK(); break;
+			case 3: if(self.isDie(new O_BLOCK(),self.grid)) return 0; self.currPiece = new O_BLOCK(); self.testPiece = new O_BLOCK(); break;
+			case 4: if(self.isDie(new S_BLOCK(),self.grid)) return 0; self.currPiece = new S_BLOCK(); self.testPiece = new S_BLOCK(); break;
+			case 5: if(self.isDie(new T_BLOCK(),self.grid)) return 0; self.currPiece = new T_BLOCK(); self.testPiece = new T_BLOCK(); break;
+			case 6: if(self.isDie(new Z_BLOCK(),self.grid)) return 0; self.currPiece = new Z_BLOCK(); self.testPiece = new Z_BLOCK(); break;
 		}
 		return 1;
+	}
+	self.copyPiece=function(piece1,piece2){
+		piece1.type = piece2.type;
+		piece1.x = piece2.x;
+		piece1.y = piece2.y;
 	}
 
 	self.hold=function(){
@@ -158,22 +170,23 @@ Player = function(param){
 	}
 
 	self.collidesAt=function(xdisplacement,ydisplacement){
-	  self.removeFromBoard();
+	  //self.removeFromBoard();
 	  for(var i=0;i<4;i++){
-	    var x = self.testPiece.x[i] + self.xorigin + xdisplacement;
-	    var y = self.testPiece.y[i] + self.yorigin + ydisplacement;
+	    var x = self.currPiece.x[i] + self.xorigin + xdisplacement;
+	    var y = self.currPiece.y[i] + self.yorigin + ydisplacement;
 	    if(x < 0 || x > 9 || y < 0 || y > 21 || self.grid[x][y]) {
-	    	self.testPiece = self.currPiece
-	      self.updateBoard();
+	      //self.copyPiece(self.testPiece,self.currPiece);
+	      //self.updateBoard();
 	      return 1;
 	    }
 	  }
-	  //self.testPiece = self.currPiece
+	  //self.copyPiece(self.testPiece,self.currPiece);
 	  //self.updateBoard();
 	  return 0;
 	}
 
 	self.try=function(action){ //{0:+rotate,1:-rotate,2:leftmove,3:rightmove,4:down}
+		var ret = 0;
 	  switch(action){
 	  case 0:
 	    self.testPiece = self.rotate(self.testPiece,1);
@@ -181,24 +194,33 @@ Player = function(param){
 	    else{return 0;}
 	 
 	  case 1:
-	  	console.log(self.testPiece, self.currPiece);;
-	    self.testPiece = self.rotate(self.testPiece,-1);
-	    console.log(self.testPiece, self.currPiece);
-	    if (!(self.collidesAt(0,0))) return 1;
-	    else{return 0;}
+	  	self.removeFromBoard();
+	  	self.rotate(self.currPiece,-1);
+	  	if (!(self.collidesAt(0,0))) {
+	  		ret=1;
+	  	}
+	  	else{
+	  		self.rotate(self.currPiece,1);
+	  	}
+	  	//console.log(self.testPiece, self.currPiece);;
+	    //self.testPiece = self.rotate(self.testPiece,-1);
+	    //console.log(self.testPiece, self.currPiece);
+	    //if (!(self.collidesAt(0,0))) return 1;
 	  
 	  case 2:
-	    if (!(self.collidesAt(-1,0))){ return 1;}
-	    else{return 0;}
+	  	self.removeFromBoard();
+	    if (!(self.collidesAt(-1,0))) ret=1;
 
 	  case 3:
-	    if (!(self.collidesAt(1,0))) return 1;
-	    else{return 0;}
+	  	self.removeFromBoard();
+	    if (!(self.collidesAt(1,0))) ret=1;
 
 	  case 4:
-	    if(!(self.collidesAt(0,1))) return 1;
-	    else{return 0;}
+	  	self.removeFromBoard();
+	    if(!(self.collidesAt(0,1))) ret=1;
 	  }
+	  self.updateBoard();
+	  return ret;
 	}
 	self.deleteRow=function(row){
 	  for (var j = row-1; j > 2; j--) {
@@ -218,7 +240,7 @@ Player = function(param){
 	}
 
 	self.rotate=function(piece, i){
-	  if (piece == O_BLOCK) return piece;
+	  //if (piece == O_BLOCK) return piece;
 	  var j; 
 	  if (i>0){  //clockwise rotation
 	    for (j=0; j<4;j++){
@@ -271,7 +293,6 @@ Player = function(param){
 			self.xorigin-=1; 
 			self.updateBoard();
 	    }
-	    return;
 	    if (self.pressingRight && self.try(3)){
 	    	console.log("right");
 			self.removeFromBoard();
@@ -279,14 +300,12 @@ Player = function(param){
 			self.updateBoard();
 			console.log("right");
 	    }
-	    return;
 	    if (self.pressingDown && self.try(4)){
 	    	console.log("down");
 			self.removeFromBoard();
 			self.yorigin+=1; 
 			self.updateBoard();
 	    }
-	    return;
 	    /*
 	    while (try(4)){
 		self.removeFromBoard();
@@ -300,7 +319,7 @@ Player = function(param){
 	      */
 	}
 	self.update = function(){
-		self.testPiece = self.currPiece;
+		self.copyPiece(self.testPiece,self.currPiece);
 		if (self.dropDownTime <= 0){
 			self.dropDownTime = 1;
 			setTimeout(function(){
@@ -345,6 +364,7 @@ Player = function(param){
 		}	
 	}
 	
+	console.log(self);
 	self.initCurrPiece();
 	self.updateBoard();
 	console.log(self.grid);
