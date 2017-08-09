@@ -84,6 +84,9 @@ Player = function(param){
 	pressingLeft : false,
 	pressingUp : false,
 	pressingDown : false,
+	pressingSpace: false,
+	pressingHold: false,
+	pressingRctrl: false,
 	}
 	//console.log(self);
 	
@@ -277,21 +280,45 @@ Player = function(param){
 
 	self.keyPressed = function(){
 		if(self.pressingUp && self.try(1)){
+			return;
 		}
 	    if (self.pressingLeft && self.try(2)){
 			self.removeFromBoard();
 			self.xorigin-=1; 
 			self.updateBoard();
+			return;
 	    }
 	    if (self.pressingRight && self.try(3)){
 			self.removeFromBoard();
 			self.xorigin+=1; 
 			self.updateBoard();
+			return;
 	    }
 	    if (self.pressingDown && self.try(4)){
 			self.removeFromBoard();
 			self.yorigin+=1; 
 			self.updateBoard();
+			return;
+	    }
+	    if (self.pressingSpace){
+	    	while(self.try(4)){
+				self.removeFromBoard();
+				self.yorigin+=1; 
+				self.updateBoard();
+			}
+			if(self.nextPiece()){
+				self.updateBoard();
+			}
+			return;
+		}
+	    /*if (self.pressingHold && self.try(4)){
+			self.removeFromBoard();
+			self.yorigin+=1; 
+			self.updateBoard();
+			return;
+	    }*/
+	    if (self.pressingRctrl && self.try(0)){
+			return;
 	    }
 	    /*
 	    while (try(4)){
@@ -379,6 +406,12 @@ Player.onConnect = function(socket,username){
 			player.pressingUp = data.state;
 		else if(data.inputId === 'down')				 //harddrop, softdrop, save
 			player.pressingDown = data.state;
+		else if(data.inputId === 'space')
+			player.pressingSpace = data.state;
+		else if(data.inputId === 'shift')
+			player.pressingHold = data.state;
+		else if(data.inputId === 'rctrl')
+			player.pressingRctrl = data.state;
 		player.keyPressed();
 	});
 	socket.on('selfPack',function(data){
