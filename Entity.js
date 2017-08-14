@@ -280,6 +280,7 @@ Player = function(param){
 
 	self.keyPressed = function(){
 		if(self.pressingUp && self.try(1)){
+			self.pressingUp = false;
 			return;
 		}
 	    if (self.pressingLeft && self.try(2)){
@@ -309,6 +310,7 @@ Player = function(param){
 			if(self.nextPiece()){
 				self.updateBoard();
 			}
+			self.pressingSpace = false;
 			return;
 		}
 	    /*if (self.pressingHold && self.try(4)){
