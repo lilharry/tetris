@@ -1,9 +1,12 @@
 
 var initPack = {player:[]};
 var removePack = {player:[]};
-
+var inGame = false;
+var allDead = false;
 
 getFrameUpdateData = function(){
+	if (!inGame && Player.list.length > 0) startGame();//timer
+	if(!inGame && Player.list.length == 0) return;
 	var pack = {
 		initPack:{
 			player:initPack.player,
@@ -18,7 +21,26 @@ getFrameUpdateData = function(){
 	};
 	initPack.player = [];
 	removePack.player = [];
+	checkDead();
 	return pack;
+}
+
+var checkDead = function(){
+	for (player of Player.list){ 
+		if (player.alive) {
+			allDead = false;
+			return;
+		}
+	}
+	allDead = true;
+	inGame = false;
+}
+var startGame = function(){
+	setTimeout(function(){inGame = true;},5000);
+}
+
+var endGame = function(){
+	inGame = false;
 }
 
 var initGrid = function(){
@@ -80,6 +102,7 @@ Player = function(param){
 	pieceQueue : [1,2,3,4,5,6,7],
 	username : param.username,
 	dropDownTime : 0,
+	alive: true,
 	pressingRight : false,
 	pressingLeft : false,
 	pressingUp : false,
@@ -136,7 +159,6 @@ Player = function(param){
 		}
 	}
 	self.nextPiece=function(){
-		console.log("next");
 		if (self.curr==7){  
 			self.pieceQueue.sort(function(a, b){return 0.5 - Math.random()});
 			self.curr = 0;
@@ -147,13 +169,13 @@ Player = function(param){
 		self.xorigin = 5;
 		self.yorigin = 2;
 		switch (self.pieceQueue[self.curr]){
-			case 0: if(self.isDie(new I_BLOCK(),self.grid)) return 0; self.currPiece = new I_BLOCK(); self.testPiece = new I_BLOCK(); break;
-			case 1: if(self.isDie(new J_BLOCK(),self.grid)) return 0; self.currPiece = new J_BLOCK(); self.testPiece = new J_BLOCK(); break;
-			case 2: if(self.isDie(new L_BLOCK(),self.grid)) return 0; self.currPiece = new L_BLOCK(); self.testPiece = new L_BLOCK(); break;
-			case 3: if(self.isDie(new O_BLOCK(),self.grid)) return 0; self.currPiece = new O_BLOCK(); self.testPiece = new O_BLOCK(); break;
-			case 4: if(self.isDie(new S_BLOCK(),self.grid)) return 0; self.currPiece = new S_BLOCK(); self.testPiece = new S_BLOCK(); break;
-			case 5: if(self.isDie(new T_BLOCK(),self.grid)) return 0; self.currPiece = new T_BLOCK(); self.testPiece = new T_BLOCK(); break;
-			case 6: if(self.isDie(new Z_BLOCK(),self.grid)) return 0; self.currPiece = new Z_BLOCK(); self.testPiece = new Z_BLOCK(); break;
+			case 0: if(self.isDie(new I_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new I_BLOCK(); self.testPiece = new I_BLOCK(); break;
+			case 1: if(self.isDie(new J_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new J_BLOCK(); self.testPiece = new J_BLOCK(); break;
+			case 2: if(self.isDie(new L_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new L_BLOCK(); self.testPiece = new L_BLOCK(); break;
+			case 3: if(self.isDie(new O_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new O_BLOCK(); self.testPiece = new O_BLOCK(); break;
+			case 4: if(self.isDie(new S_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new S_BLOCK(); self.testPiece = new S_BLOCK(); break;
+			case 5: if(self.isDie(new T_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new T_BLOCK(); self.testPiece = new T_BLOCK(); break;
+			case 6: if(self.isDie(new Z_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new Z_BLOCK(); self.testPiece = new Z_BLOCK(); break;
 		}
 		return 1;
 	}
