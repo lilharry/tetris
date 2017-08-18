@@ -3,45 +3,7 @@ var initPack = {player:[]};
 var removePack = {player:[]};
 var inGame = false;
 var allDead = false;
-
-getFrameUpdateData = function(){
-	if (!inGame && Player.list.length > 0) startGame();//timer
-	if(!inGame && Player.list.length == 0) return;
-	var pack = {
-		initPack:{
-			player:initPack.player,
-
-		},
-		removePack:{
-			player:removePack.player,
-		},
-		updatePack:{
-			player:Player.update(),
-		}
-	};
-	initPack.player = [];
-	removePack.player = [];
-	checkDead();
-	return pack;
-}
-
-var checkDead = function(){
-	for (player of Player.list){ 
-		if (player.alive) {
-			allDead = false;
-			return;
-		}
-	}
-	allDead = true;
-	inGame = false;
-}
-var startGame = function(){
-	setTimeout(function(){inGame = true;},5000);
-}
-
-var endGame = function(){
-	inGame = false;
-}
+var startingGame = false;
 
 var initGrid = function(){
 	numrows = 22;
@@ -111,7 +73,6 @@ Player = function(param){
 	pressingHold: false,
 	pressingRctrl: false,
 	}
-	//console.log(self);
 	
 	self.printGrid = function(){
 	  var str = ""
@@ -169,13 +130,13 @@ Player = function(param){
 		self.xorigin = 5;
 		self.yorigin = 2;
 		switch (self.pieceQueue[self.curr]){
-			case 0: if(self.isDie(new I_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new I_BLOCK(); self.testPiece = new I_BLOCK(); break;
-			case 1: if(self.isDie(new J_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new J_BLOCK(); self.testPiece = new J_BLOCK(); break;
-			case 2: if(self.isDie(new L_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new L_BLOCK(); self.testPiece = new L_BLOCK(); break;
-			case 3: if(self.isDie(new O_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new O_BLOCK(); self.testPiece = new O_BLOCK(); break;
-			case 4: if(self.isDie(new S_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new S_BLOCK(); self.testPiece = new S_BLOCK(); break;
-			case 5: if(self.isDie(new T_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new T_BLOCK(); self.testPiece = new T_BLOCK(); break;
-			case 6: if(self.isDie(new Z_BLOCK(),self.grid)) {alive = false; return 0;} self.currPiece = new Z_BLOCK(); self.testPiece = new Z_BLOCK(); break;
+			case 0: if(self.isDie(new I_BLOCK(),self.grid)) {self.alive = false; return 0;} self.currPiece = new I_BLOCK(); self.testPiece = new I_BLOCK(); break;
+			case 1: if(self.isDie(new J_BLOCK(),self.grid)) {self.alive = false; return 0;} self.currPiece = new J_BLOCK(); self.testPiece = new J_BLOCK(); break;
+			case 2: if(self.isDie(new L_BLOCK(),self.grid)) {self.alive = false; return 0;} self.currPiece = new L_BLOCK(); self.testPiece = new L_BLOCK(); break;
+			case 3: if(self.isDie(new O_BLOCK(),self.grid)) {self.alive = false; return 0;} self.currPiece = new O_BLOCK(); self.testPiece = new O_BLOCK(); break;
+			case 4: if(self.isDie(new S_BLOCK(),self.grid)) {self.alive = false; return 0;} self.currPiece = new S_BLOCK(); self.testPiece = new S_BLOCK(); break;
+			case 5: if(self.isDie(new T_BLOCK(),self.grid)) {self.alive = false; return 0;} self.currPiece = new T_BLOCK(); self.testPiece = new T_BLOCK(); break;
+			case 6: if(self.isDie(new Z_BLOCK(),self.grid)) {self.alive = false; return 0;} self.currPiece = new Z_BLOCK(); self.testPiece = new Z_BLOCK(); break;
 		}
 		return 1;
 	}
@@ -301,6 +262,7 @@ Player = function(param){
 	}
 
 	self.keyPressed = function(){
+		if (!self.alive) return;
 		if(self.pressingUp && self.try(1)){
 			self.pressingUp = false;
 			return;
@@ -357,6 +319,7 @@ Player = function(param){
 	      */
 	}
 	self.update = function(){
+		if (!self.alive) return;
 		self.copyPiece(self.testPiece,self.currPiece);
 		if (self.dropDownTime <= 0){
 			self.dropDownTime = 1;
@@ -369,8 +332,11 @@ Player = function(param){
 				else{
 					if(self.nextPiece()){
 						self.updateBoard();
-					}/*
+					}
 					else{
+						console.log(self.id + " died");
+					}
+					/*
 						socket.emit("gameover",{
 							player:self.id,
 						})*/
@@ -438,10 +404,11 @@ Player.onConnect = function(socket,username){
 			player.pressingRctrl = data.state;
 		player.keyPressed();
 	});
+	/*
 	socket.on('selfPack',function(data){
 		player.canvasDataURL = data.playerDataURL;
 	});
-/*	socket.on('sendMsgToServer',function(data){
+	socket.on('sendMsgToServer',function(data){
 		for(var i in SOCKET_LIST){
 			SOCKET_LIST[i].emit('addToChat',player.username + ': ' + data);
 		}
@@ -485,4 +452,66 @@ Player.update = function(){
 		pack.push(player.getUpdatePack());		
 	}
 	return pack;
+}
+
+getFrameUpdateData = function(){
+	//console.log(Object.keys(Player.list).length);
+	if (!inGame){
+		if(Object.keys(Player.list).length > 0) {
+			if (!startingGame) startGame(); 
+		}
+		//if(Object.keys(Player.list).length == 0) 
+		return {initPack:{player:{}},removePack:{player:{}},updatePack:{player:{}}};
+	}
+	var pack = {
+		initPack:{
+			player:initPack.player,
+
+		},
+		removePack:{
+			player:removePack.player,
+		},
+		updatePack:{
+			player:Player.update(),
+		}
+	};
+	initPack.player = [];
+	removePack.player = [];
+	checkDead();
+	return pack;
+}
+
+var checkDead = function(){
+	//console.log(inGame);
+	//console.log(Player.list);
+	for (player in Player.list){
+		//console.log(Player.list[player],Player.list[player].alive);
+		if (Player.list[player].alive) {
+			allDead = false;
+			return;
+		}
+	}
+	allDead = true;
+	inGame = false;
+	console.log(allDead,inGame);
+}
+
+var startGame = function(){
+	console.log("start");
+	startingGame = true;
+	setTimeout(function(){
+		inGame = true;
+		allDead = false;
+		startingGame = false;
+		for (player in Player.list){
+			console.log(Player.list[player]);
+			Player.list[player].grid = initGrid();
+			Player.list[player].initCurrPiece();
+			Player.list[player].alive = true;
+		}
+	},5000);
+}
+
+var endGame = function(){
+	inGame = false;
 }
